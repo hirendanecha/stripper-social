@@ -1,0 +1,77 @@
+<div class="main-container">
+  <nav class="navbar navbar-light px-6 px-sm-10 auth-btns">
+    <div class="d-flex flex-column cursor" routerLink="/">
+      <img
+        src="/assets/images/landingpage/Pussy-Ventures-Logo.png"
+        class="h-60-px pt-2"
+        alt=""
+      />
+    </div>
+    <div class="d-lg-none d-md-none d-block c-button-landing">
+      <fa-icon [icon]="['fas', 'bars']" (click)="mobileMenu()" />
+    </div>
+    <div class="landing-btn d-none d-md-block d-lg-block">
+      <!-- *ngIf="!isLogin" -->
+      <button
+        class="btn cmn-btn third w-80-px rounded-5"
+        (click)="openLoginPage()"
+      >
+        Login
+      </button>
+      <!-- *ngIf="isLogin" -->
+      <button
+        class="btn btn-outline alt third w-80-px ms-2 rounded-5"
+        (click)="openSignPage()"
+      >
+        Signup
+      </button>
+    </div>
+  </nav>
+
+  <div class="custom-mobile-height" *ngIf="isInnerWidthSmall && (isLogin || isRegister)" (click)="closeMenu()"></div>
+  <div (click)="closeMenu()">
+    <div class="d-flex flex-column py-sm-10" [ngClass]="!isInnerWidthSmall || (!isLogin && !isRegister) ? 'custom-height' : ''">
+      <div class="container">
+        <div class="main-banner p-2 p-sm-4 position-relative" *ngIf="!isLogin && !isRegister">
+          <span class="d-flex flex-column align-items-center">
+            <h1 class="text-black my-2 text-s">Stripper.social</h1>
+            <p class="text-black c-fonts my-3 mb-0">Live Girls!</p>
+            <p class="text-black c-fonts my-3 mb-0 mt-4">Talk One-on-One Face-to-Face</p>
+          </span>
+        </div>
+        <div class="row m-0 justify-content-end offset-0"></div>
+      </div>
+      <ng-container *ngIf="isLogin">
+        <app-login></app-login>
+      </ng-container>
+      <ng-container *ngIf="isRegister">
+        <app-sign-up></app-sign-up>
+      </ng-container>
+    </div>
+    <div class="h-200-px"  *ngIf="!isInnerWidthSmall"></div>
+  </div>
+</div>
+<ng-container *ngIf="mobileMenuToggle">
+  <div class="main-area p-5 profile-content">
+    <div class="head-area">
+      <div class="d-flex gap-3">
+        <div class="text-area">
+          <h6 class="m-0 mb-1"></h6>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex flex-row-reverse c-button-landing">
+      <button class="c-btn" (click)="closeMenu()">
+        <fa-icon [icon]="['fas', 'xmark']" />
+      </button>
+    </div>
+    <ul class="ps-0">
+      <li>
+        <a class="mdtxt text-black" (click)="openLoginPage()"> Login </a>
+      </li>
+      <li>
+        <a class="mdtxt text-black" (click)="openSignPage()"> Sign up </a>
+      </li>
+    </ul>
+  </div>
+</ng-container>
