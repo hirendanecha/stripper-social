@@ -160,7 +160,7 @@ export function app(): express.Express {
               post?.thumbfilename ||
               post?.metaimage ||
               post?.imageUrl ||
-              'https://www.stripper.social/assets/images/landingpage/Pussy-Ventures-Square-Logo.png',
+              'https://www.stripper.social/assets/images/landingpage/profile.png',
           };
           seo.title = talent.name;
           seo.description = strip_html_tags(talent.description);

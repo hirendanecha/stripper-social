@@ -69,7 +69,7 @@ export class SeoService {
     }
 
     if (!tagValue.image) {
-      tagValue.image = 'https://stripper.social/assets/images/banner/Healing-Tube-Logo.png';
+      tagValue.image = 'https://stripper.social/assets/images/banner/cover.png';
     }
 
     this.meta.updateTag({

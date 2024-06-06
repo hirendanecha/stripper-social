@@ -698,7 +698,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (!profile.profilePictures || profile.profilePictures.length === 0) {
       profile.profilePictures = [
         {
-          imageUrl: '/assets/images/landingpage/Pussy-Ventures-Square-Logo.png',
+          imageUrl: '/assets/images/landingpage/Square-Logo.png',
         },
       ];
     }
