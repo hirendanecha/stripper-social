@@ -173,7 +173,21 @@ export class ProfileChatsListComponent
           }
           this.scrollToBottom();
           if (data !== null) {
-            this.messageList.push(data);
+            // this.messageList.push(data);
+            const url = data?.messageText || null;
+            const text = url?.replace(/<br\s*\/?>|<[^>]*>/g, ' ');
+            const matches = text?.match(
+              /(?:https?:\/\/|www\.)[^\s<]+(?:\s|<br\s*\/?>|$)/
+            );
+
+            if (matches?.[0]) {
+              this.getMetaDataFromUrlStr(matches?.[0]).then((metaData) => {
+                data['metaData'] = metaData;
+                this.messageList.push(data);
+              });
+            } else {
+              this.messageList.push(data);
+            }
           }
           const lastIndex = this.filteredMessageList.length - 1;
           if (this.filteredMessageList[lastIndex]) {
@@ -409,7 +423,7 @@ export class ProfileChatsListComponent
                 data.parentMessage?.messageText
               );
           }
-          const text = data.messageText?.replace(/<br\s*\/?>|<[^>]*>/g, '');
+          const text = data.messageText?.replace(/<br\s*\/?>|<[^>]*>/g, ' ');
           const matches = text?.match(
             /(?:https?:\/\/|www\.)[^\s<]+(?:\s|<br\s*\/?>|$)/
           );
@@ -558,7 +572,7 @@ export class ProfileChatsListComponent
           return (element.messages = element?.messages.filter(
             async (e: any) => {
               const url = e?.messageText || null;
-              const text = url?.replace(/<br\s*\/?>|<[^>]*>/g, '');
+              const text = url?.replace(/<br\s*\/?>|<[^>]*>/g, ' ');
               const matches = text?.match(
                 /(?:https?:\/\/|www\.)[^\s<]+(?:\s|<br\s*\/?>|$)/
               );

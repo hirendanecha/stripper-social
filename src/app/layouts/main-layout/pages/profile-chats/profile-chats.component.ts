@@ -1,6 +1,7 @@
 import {
   Component,
   ElementRef,
+  NgZone,
   OnDestroy,
   OnInit,
   Renderer2,
@@ -13,6 +14,11 @@ import { ConfirmationModalComponent } from 'src/app/@shared/modals/confirmation-
 import { BreakpointService } from 'src/app/@shared/services/breakpoint.service';
 import { take } from 'rxjs';
 import * as moment from 'moment';
+import { AppQrModalComponent } from 'src/app/@shared/modals/app-qr-modal/app-qr-modal.component';
+import { ConferenceLinkComponent } from 'src/app/@shared/modals/create-conference-link/conference-link-modal.component';
+import { Router } from '@angular/router';
+import { CustomerService } from 'src/app/@shared/services/customer.service';
+import { ToastService } from 'src/app/@shared/services/toast.service';
 
 @Component({
   selector: 'app-profile-chat-list',
@@ -40,6 +46,11 @@ export class ProfileChartsComponent implements OnInit, OnDestroy {
   };
   oldChat: any = {};
 
+  isMessageSoundEnabled: boolean = true;
+  isCallSoundEnabled: boolean = true;
+  isInnerWidthSmall: boolean;
+  isSidebarOpen: boolean = false;
+
   constructor(
     private renderer: Renderer2,
     private el: ElementRef,
@@ -47,7 +58,11 @@ export class ProfileChartsComponent implements OnInit, OnDestroy {
     private sharedService: SharedService,
     private socketService: SocketService,
     private modalService: NgbModal,
-    public breakpointService: BreakpointService
+    public breakpointService: BreakpointService,
+    private ngZone:NgZone,
+    private router: Router,
+    private customerService: CustomerService,
+    private toasterService: ToastService
   ) {
     this.profileId = +localStorage.getItem('profileId');
     if (this.sharedService.isNotify) {
@@ -65,6 +80,21 @@ export class ProfileChartsComponent implements OnInit, OnDestroy {
         }
       });
     }
+
+    this.isInnerWidthSmall = window.innerWidth < 576;
+    if (this.isInnerWidthSmall && !this.isSidebarOpen && this.router.url === '/profile-chats') {
+      this.openChatListSidebar();
+    }
+    this.ngZone.runOutsideAngular(() => {
+      window.addEventListener('resize', this.onResize.bind(this));
+    });
+
+    this.sharedService.loginUserInfo.subscribe((user) => {
+      this.isCallSoundEnabled =
+        user?.callNotificationSound === 'Y' ? true : false;
+      this.isMessageSoundEnabled =
+        user?.messageNotificationSound === 'Y' ? true : false;
+    });
   }
 
   mobileMenu(): void {
@@ -103,13 +133,26 @@ export class ProfileChartsComponent implements OnInit, OnDestroy {
     this.selectedRoomId = id;
   }
 
+  onResize() {
+    this.ngZone.run(() => {
+      this.isInnerWidthSmall = window.innerWidth < 576;
+      // if (this.isInnerWidthSmall && !this.isSidebarOpen && this.router.url === '/profile-chats') {
+      //   this.openChatListSidebar();
+      // }
+    });
+  }
+
   openChatListSidebar() {
+    this.isSidebarOpen = true;
     const offcanvasRef = this.offcanvasService.open(
       ProfileChatsSidebarComponent,
       this.userChat
     );
     offcanvasRef.componentInstance.onNewChat.subscribe((emittedData: any) => {
       this.onChatPost(emittedData);
+    });
+    offcanvasRef.result.then((result) => {}).catch((reason) => {
+      this.isSidebarOpen = false;
     });
   }
 
@@ -123,26 +166,59 @@ export class ProfileChartsComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.message =
       'Would you like to add a Stripper.social icon to your mobile Home screen?';
     modalRef.result.then((res) => {
+      localStorage.setItem('isMobilePopShow', 'N');
       if (res === 'success') {
         const modalRef = this.modalService.open(ConfirmationModalComponent, {
           centered: true,
         });
-        modalRef.componentInstance.title = 'Add freedom chats on home';
+        modalRef.componentInstance.title = 'Add Stripper.social chats on home';
         modalRef.componentInstance.confirmButtonLabel = 'Do not display again';
         modalRef.componentInstance.cancelButtonLabel = 'Close';
         modalRef.componentInstance.message =
           'On your browser click on browser menu, then click Add to Home Screen';
         modalRef.result.then((res) => {
           if (res === 'success') {
-            localStorage.setItem('isMobilePopShow', 'N');
+            // localStorage.setItem('isMobilePopShow', 'N');
           }
         });
       }
     });
   }
 
+  toggleSoundPreference(property: string, ngModelValue: boolean): void {
+    // const soundPreferences =
+    //   JSON.parse(localStorage.getItem('soundPreferences')) || {};
+    // soundPreferences[property] = ngModelValue ? 'Y' : 'N';
+    // localStorage.setItem('soundPreferences', JSON.stringify(soundPreferences));
+    const soundObj = {
+      property: property,
+      value: ngModelValue ? 'Y' : 'N',
+    };
+    this.customerService.updateNotificationSound(soundObj).subscribe({
+      next: (res) => {
+        this.toasterService.success(res.message);
+        this.sharedService.getUserDetails();
+      },
+      error: (err) => {
+        console.log(err);
+      },
+    });
+  }
+
+  appQrmodal(){
+    const modalRef = this.modalService.open(AppQrModalComponent, {
+      centered: true,
+    });
+  }
+  uniqueLink(){
+    const modalRef = this.modalService.open(ConferenceLinkComponent ,{
+      centered: true,
+    });
+  }
+
   ngOnDestroy(): void {
     this.isRoomCreated = false;
+    window.removeEventListener('resize', this.onResize.bind(this));
     // if (this.socketService?.socket) {
     //   this.socketService.socket?.disconnect();
     // }
